@@ -3,67 +3,43 @@ using System.Net.WebSockets;
 using System.Text.Json;
 using EspacioTareas;
 
-HttpClient client = new HttpClient();
+HttpClient client = new HttpClient(); //instancia Http
 var url = "https://jsonplaceholder.typicode.com/todos/";
 
-HttpResponseMessage response = await client.GetAsync(url);
-response.EnsureSuccessStatusCode();
+HttpResponseMessage response = await client.GetAsync(url); //envio de solicitud GET
+response.EnsureSuccessStatusCode(); //verifico si la solicitud fue exitosa
 
+//se lee y deserealiza la respuesta
 string responseBody = await response.Content.ReadAsStringAsync();
 List<Tarea> listTarea = JsonSerializer.Deserialize<List<Tarea>>(responseBody);
 
 Console.WriteLine("---------------Tareas---------------\n");
 
-List<Tarea> listPendientes = new List<Tarea>();
-List<Tarea> listRealizadas = new List<Tarea>();
-
-foreach (var tarea in listTarea)
+foreach (Tarea tarea in listTarea)
+{
+    if (!tarea.completed)
+    {
+        Console.WriteLine($"\nTitulo: {tarea.title}");
+        Console.WriteLine($"Estado: Pendiente");
+    }
+}
+foreach (Tarea tarea in listTarea)
 {
     if (tarea.completed)
     {
-        listRealizadas.Add(tarea);
-    }
-    else
-    {
-        listPendientes.Add(tarea);
+        Console.WriteLine($"\nTitulo: {tarea.title}");
+        Console.WriteLine($"Estado: Completada");
     }
 }
-
-MostrarListas(listPendientes);
-MostrarListas(listRealizadas);
 
 //Serializar nuevamente
-string MiArchivo = "c:/taller-de-lenguajes/tl1-tp10-2025-camip1/Tareas/tareas.json";
+string ruta = Directory.GetCurrentDirectory();
+string MiArchivo = ruta + "/Tareas/tareas.json";
 
-string[] lineas = new string[listTarea.Count+2];
-lineas[0] = "[";
-int i = 1;
-
-foreach (var tarea in listTarea)
+using (StreamWriter sw = new StreamWriter(MiArchivo))
 {
-    string jsonString = JsonSerializer.Serialize(tarea);
-    if (i != listTarea.Count)
-    {
-        lineas[i] = jsonString + ",";
-    }
-    else
-    {
-        lineas[i] = jsonString;
-    }
-    i++;
-    //Console.WriteLine(jsonString);
+    string jsonString = JsonSerializer.Serialize(listTarea, new JsonSerializerOptions { WriteIndented = true }); //formato de JSON
+    sw.WriteLine(jsonString);
 }
 
-lineas[listTarea.Count+1] = "]";
-
-File.WriteAllLines(MiArchivo, lineas);
 Console.WriteLine($"Reporte guardado en {MiArchivo}");
-
-
-static void MostrarListas(List<Tarea> lista)
-{
-    foreach (var tareas in lista)
-    {
-        tareas.MostrarDatos();
-    }
-}
