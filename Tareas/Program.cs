@@ -3,15 +3,7 @@ using System.Net.WebSockets;
 using System.Text.Json;
 using EspacioTareas;
 
-HttpClient client = new HttpClient(); //instancia Http
-var url = "https://jsonplaceholder.typicode.com/todos/";
-
-HttpResponseMessage response = await client.GetAsync(url); //envio de solicitud GET
-response.EnsureSuccessStatusCode(); //verifico si la solicitud fue exitosa
-
-//se lee y deserealiza la respuesta
-string responseBody = await response.Content.ReadAsStringAsync();
-List<Tarea> listTarea = JsonSerializer.Deserialize<List<Tarea>>(responseBody);
+List<Tarea> listTarea = await GetTareas();
 
 Console.WriteLine("---------------Tareas---------------\n");
 
@@ -43,3 +35,17 @@ using (StreamWriter sw = new StreamWriter(MiArchivo))
 }
 
 Console.WriteLine($"Reporte guardado en {MiArchivo}");
+
+static async Task<List<Tarea>> GetTareas()
+{
+    HttpClient client = new HttpClient(); //instancia Http
+    var url = "https://jsonplaceholder.typicode.com/todos/";
+
+    HttpResponseMessage response = await client.GetAsync(url); //envio de solicitud GET
+    response.EnsureSuccessStatusCode(); //verifico si la solicitud fue exitosa
+
+    //se lee y deserealiza la respuesta
+    string responseBody = await response.Content.ReadAsStringAsync();
+    List<Tarea> listTarea = JsonSerializer.Deserialize<List<Tarea>>(responseBody);
+    return listTarea;
+}

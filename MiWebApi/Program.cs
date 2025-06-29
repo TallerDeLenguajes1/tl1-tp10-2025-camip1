@@ -3,15 +3,7 @@ using System.Net.WebSockets;
 using System.Text.Json;
 using EspacioNoticias;
 
-HttpClient client = new HttpClient();
-string url = "http://api.mediastack.com/v1/news?access_key=6d2d7f4c0c24d8b6e7d5ad24c4fa5d77";
-
-HttpResponseMessage response = await client.GetAsync(url);
-response.EnsureSuccessStatusCode();
-
-string responseBody = await response.Content.ReadAsStringAsync();
-News listNoticias = JsonSerializer.Deserialize<News>(responseBody);
-List<NewsItem> datos = listNoticias.data;
+List<NewsItem> datos = await GetNewsAsync();
 
 Console.WriteLine("------------Ultimas Noticias mundiales------------");
 
@@ -34,4 +26,16 @@ using (StreamWriter sw = new StreamWriter(ruta + @"\MiWebApi\News.json"))
     sw.WriteLine(jsonString);
 }
 
+static async Task<List<NewsItem>> GetNewsAsync()
+{    
+    HttpClient client = new HttpClient();
+    string url = "http://api.mediastack.com/v1/news?access_key=6d2d7f4c0c24d8b6e7d5ad24c4fa5d77";
 
+    HttpResponseMessage response = await client.GetAsync(url);
+    response.EnsureSuccessStatusCode();
+
+    string responseBody = await response.Content.ReadAsStringAsync();
+    News listNoticias = JsonSerializer.Deserialize<News>(responseBody);
+    List<NewsItem> datos = listNoticias.data;
+    return datos;
+}
